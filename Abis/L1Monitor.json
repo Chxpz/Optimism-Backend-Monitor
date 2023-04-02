@@ -1,0 +1,77 @@
+[
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bridgeAddress",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token1",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token2",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct L1Monitor.TokenPair[]",
+          "name": "tokenPairs",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "getBridgebalances",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "token1",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "token2",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "balance",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct L1Monitor.TokenPair[]",
+              "name": "tokenPair",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timeStamp",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct L1Monitor.BridgeBalance",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
