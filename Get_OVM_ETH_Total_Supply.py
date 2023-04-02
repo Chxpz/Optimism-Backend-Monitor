@@ -1,4 +1,5 @@
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
@@ -8,7 +9,6 @@ import time
 def OVM_ETH_Total_Supply():
     load_dotenv()
     rpc_provider_URL = os.getenv('L2_RPC_PROVIDER_URL')
-    private_key = os.getenv('PRIVATE_KEY')
     mongo_string = os.getenv('MONGO_STRING')
 
     client = MongoClient(mongo_string)
@@ -24,17 +24,18 @@ def OVM_ETH_Total_Supply():
     OVM_ETH_CONTRACT_ADDRESS_CHECKSUM = Web3.to_checksum_address(OVM_ETH_CONTRACT_ADDRESS)
 
     w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
+    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     OVM_ETH = w3.eth.contract(address=OVM_ETH_CONTRACT_ADDRESS_CHECKSUM, abi=Contract1Abi)
 
     while True:
         total_supply = str(OVM_ETH.functions.totalSupply().call())
-        timestamp = int(time.time())
+        timestamp = w3.eth.get_block('latest')['timestamp']
         collection.insert_one({
             "OP-ETH-Supply": total_supply,
             "timestamp": timestamp
         })
-        time.sleep(10)
+        time.sleep(180)
         print("OP-ETH-Supply: ", total_supply, "Timestamp: ", timestamp)
 
 if __name__ == '__main__':

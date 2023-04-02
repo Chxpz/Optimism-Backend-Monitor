@@ -103,9 +103,3 @@ def monitor_deposits_L1():
                 "timestamp": block_timestamp
             })
             print("New Event added to L1 database")
-
-
-
-
-
-
