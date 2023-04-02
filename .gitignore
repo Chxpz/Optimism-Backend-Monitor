@@ -1,0 +1,23 @@
+# Ignore compiled Python files
+*.pyc
+
+# Ignore Python virtual environment and dependencies
+monitor/
+venv/
+
+# Ignore environment variable files
+.env
+
+# Log files
+*.log
+
+# Compiled Python bytecode
+__pycache__/
+
+# Build files and compiled binaries
+*.o
+*.exe
+
+# Editor-specific files
+.vscode/
+.idea/

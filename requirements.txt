@@ -1,0 +1,4 @@
+eth-account==latest
+pymongo==latest
+web3==latest
+python-dotenv==latest
