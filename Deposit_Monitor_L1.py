@@ -34,10 +34,12 @@ def monitor_deposits_L1():
     CONTRACT_ADDRESS_3 = "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1"
 
 
-
-    w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    # w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    try:
+        w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        # w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    except Exception as e:
+        print(f"Error connecting to web3 provider: {e}")
 
     account = Account.from_key(private_key)
 
@@ -62,13 +64,16 @@ def monitor_deposits_L1():
                 for k, v in event['args'].items()
                 if k != '_data'
             }
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "TransactionEnqueued",
-                "event_args": event_args,
-                "tx_hash": tx_hash,
-                "timestamp": block_timestamp
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "TransactionEnqueued",
+                    "event_args": event_args,
+                    "tx_hash": tx_hash,
+                    "timestamp": block_timestamp
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
 
         for event in event_filter_2.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -79,13 +84,16 @@ def monitor_deposits_L1():
                 for k, v in event['args'].items()
                 if k != '_data' and k != 'message'
             }
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "SentMessage",
-                "event_args": event_args,
-                "tx_hash": tx_hash,
-                "timestamp": block_timestamp
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "SentMessage",
+                    "event_args": event_args,
+                    "tx_hash": tx_hash,
+                    "timestamp": block_timestamp
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
 
         for event in event_filter_3.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -96,13 +104,18 @@ def monitor_deposits_L1():
                 for k, v in event['args'].items()
                 if k != '_data'
             }
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "ETHDepositInitiated",
-                "event_args": event_args,
-                "tx_hash": tx_hash,
-                "timestamp": block_timestamp
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "ETHDepositInitiated",
+                    "from": str(event_args['_from']),
+                    "to": str(event_args['_to']),
+                    "amount": str(event_args['_amount']),
+                    "tx_hash": tx_hash,
+                    "timestamp": block_timestamp
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
         
         for event in event_filter_4.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -113,11 +126,20 @@ def monitor_deposits_L1():
                 for k, v in event['args'].items()
                 if k != '_data'
             }
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "ERC20DepositInitiated",
-                "event_args": event_args,
-                "tx_hash": tx_hash,
-                "timestamp": block_timestamp
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "ERC20DepositInitiated",
+                    "l1Token": str(event_args['_l1Token']),
+                    "l2Token": str(event_args['_l2Token']),
+                    "from": str(event_args['_from']),
+                    "to": str(event_args['_to']),
+                    "amount": str(event_args['_amount']),
+                    "event_args": event_args,
+                    "tx_hash": tx_hash,
+                    "timestamp": block_timestamp
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
+            
             print("New Event added to L1 database")

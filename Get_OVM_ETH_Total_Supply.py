@@ -23,18 +23,24 @@ def OVM_ETH_Total_Supply():
     OVM_ETH_CONTRACT_ADDRESS = "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000"
     OVM_ETH_CONTRACT_ADDRESS_CHECKSUM = Web3.to_checksum_address(OVM_ETH_CONTRACT_ADDRESS)
 
-    w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    try:
+        w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    except Exception as e:
+        print(f"Error connecting to web3 provider: {e}")
 
     OVM_ETH = w3.eth.contract(address=OVM_ETH_CONTRACT_ADDRESS_CHECKSUM, abi=Contract1Abi)
 
     while True:
-        total_supply = str(OVM_ETH.functions.totalSupply().call())
-        timestamp = w3.eth.get_block('latest')['timestamp']
-        collection.insert_one({
-            "OP-ETH-Supply": total_supply,
-            "timestamp": timestamp
-        })
+        try:
+            total_supply = str(OVM_ETH.functions.totalSupply().call())
+            timestamp = w3.eth.get_block('latest')['timestamp']
+            collection.insert_one({
+                "OP-ETH-Supply": total_supply,
+                "timestamp": timestamp
+            })
+        except Exception as e:
+            print(f"Error: {e}")
         time.sleep(180)
         print("OP-ETH-Supply: ", total_supply, "Timestamp: ", timestamp)
 

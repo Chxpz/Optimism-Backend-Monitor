@@ -23,9 +23,11 @@ def Get_L1_Balances(tokenPairs):
         Contract1Abi = json.load(f)
 
     L1_MONITOR_ADDR = Web3.to_checksum_address("0x370d6ec27E153E7c225ea2124915f5fDBA5377E0")
-
-    w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    try:
+        w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    except Exception as e:
+        print(f"Error connecting to web3 provider: {e}")
 
     bridgeAddress = Web3.to_checksum_address("0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1")
 
@@ -34,18 +36,25 @@ def Get_L1_Balances(tokenPairs):
     L1_Monitor = w3.eth.contract(address=L1_MONITOR_ADDR, abi=Contract1Abi)
 
     while True:
-        balance = L1_Monitor.functions.getBridgebalances(bridgeAddress, tokenPairs).call()
+        try:
+            balance = L1_Monitor.functions.getBridgebalances(bridgeAddress, tokenPairs).call()
+        except Exception as e:
+            print(f"Error getting L1 balances: {e}")
+
         L1_Balances = {"ethBalance": str(balance[1]), "timeStamp": balance[2], "tokenPair": []}
         for i in range(len(balance[0])):
             token = balance[0][i]
             L1_Balances["tokenPair"].append({"tokenL1": token[0], "tokenL2": token[1], "balance": token[2]})
         timestamp = w3.eth.get_block('latest')['timestamp']
         tokenPairsList = [{"tokenL1": str(L1_Balances["tokenPair"][i]["tokenL1"]), "tokenL2": str(L1_Balances["tokenPair"][i]["tokenL2"]), "balance": str(L1_Balances["tokenPair"][i]["balance"])} for i in range(len(tokenPairs))]
-        collection.insert_one({
-            "tokenPairs": tokenPairsList,
-            "ethBalance": str(L1_Balances["ethBalance"]),
-            "timeStamp": str(L1_Balances["timeStamp"])
-        })
+        try:
+            collection.insert_one({
+                "tokenPairs": tokenPairsList,
+                "ethBalance": str(L1_Balances["ethBalance"]),
+                "timeStamp": str(timestamp)
+            })
+        except Exception as e:
+            print(f"Error inserting L1 balances into database: {e}")
         time.sleep(180)
         print("L1 Balances added to database")
 

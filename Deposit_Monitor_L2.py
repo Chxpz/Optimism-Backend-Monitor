@@ -31,9 +31,11 @@ def monitor_deposits_L2():
     CONTRACT_ADDRESS_2 = "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000"
     checksum_address = Web3.to_checksum_address(CONTRACT_ADDRESS_2)
 
-    w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    # w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    try:
+        w3 = Web3(Web3.HTTPProvider(rpc_provider_URL))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    except Exception as e:
+        print(f"Error connecting to web3 provider: {e}")
 
     account = Account.from_key(private_key)
 
@@ -49,40 +51,47 @@ def monitor_deposits_L2():
     while True:
         for event in event_filter_Transfer.get_new_entries():
             event_args = {k: v.decode('latin-1') if isinstance(v, bytes) else v for k, v in event['args'].items() if k != '_data'}
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "Transfer",
-                "event_args": event_args,
-                "transaction_hash": event['transactionHash'].hex(),
-                "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "Transfer",
+                    "from": str(event_args['from']),
+                    "to": str(event_args['to']),
+                    "value": str(event_args['value']),
+                    "transaction_hash": event['transactionHash'].hex(),
+                    "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
 
         for event in event_filter_Mint.get_new_entries():
             event_args = {k: v.decode('latin-1') if isinstance(v, bytes) else v for k, v in event['args'].items() if k != '_data' and k != 'message'}
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "Mint",
-                "event_args": event_args,
-                "transaction_hash": event['transactionHash'].hex(),
-                "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "Mint",
+                    "account": str(event_args['_account']),
+                    "amount": str(event_args['_amount']),
+                    "transaction_hash": event['transactionHash'].hex(),
+                    "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
 
         for event in event_filter_DepositFinalized.get_new_entries():
             event_args = {k: v.decode('latin-1') if isinstance(v, bytes) else v for k, v in event['args'].items() if k != '_data'}
-            collection.insert_one({
-                "contract_address": event['address'],
-                "event_name": "DepositFinalized",
-                "event_args": event_args,
-                "transaction_hash": event['transactionHash'].hex(),
-                "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
-            })
+            try:
+                collection.insert_one({
+                    "contract_address": event['address'],
+                    "event_name": "DepositFinalized",
+                    "l1Token": str(event_args['_l1Token']),
+                    "l2Token": str(event_args['_l2Token']),
+                    "from": str(event_args['_from']),
+                    "to": str(event_args['_to']),
+                    "amount": str(event_args['_amount']),
+                    "transaction_hash": event['transactionHash'].hex(),
+                    "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
+                })
+            except Exception as e:
+                print(f"Error inserting event into database: {e}")
             print("New Event added to L2 database")
-
-
-# Events                # Contract                          # Contract Address          
-# Transfer              OVM_ETH                             0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000
-# Mint                  OVM_ETH                             0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000
-
-# DepositFinalized      OVM_L2StandardBridge                0x4200000000000000000000000000000000000010
-
-# NoName                OVM_L2CrossDomainMessenger          0x4200000000000000000000000000000000000007
