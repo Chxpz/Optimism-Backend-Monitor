@@ -48,6 +48,7 @@ def monitor_deposits_L1():
     event_filter_1 = contract1.events.TransactionEnqueued.create_filter(fromBlock='latest')
     event_filter_2 = contract2.events.SentMessage.create_filter(fromBlock='latest')
     event_filter_3 = contract3.events.ETHDepositInitiated.create_filter(fromBlock='latest')
+    event_filter_4 = contract3.events.ERC20DepositInitiated.create_filter(fromBlock='latest')
 
     print("Listening for events in L1...")
 
@@ -98,6 +99,23 @@ def monitor_deposits_L1():
             collection.insert_one({
                 "contract_address": event['address'],
                 "event_name": "ETHDepositInitiated",
+                "event_args": event_args,
+                "tx_hash": tx_hash,
+                "timestamp": block_timestamp
+            })
+        
+        for event in event_filter_4.get_new_entries():
+            tx_hash = event['transactionHash'].hex()
+            block_number = event['blockNumber']
+            block_timestamp = w3.eth.get_block(block_number).timestamp
+            event_args = {
+                k: v.decode('latin-1') if isinstance(v, bytes) else v
+                for k, v in event['args'].items()
+                if k != '_data'
+            }
+            collection.insert_one({
+                "contract_address": event['address'],
+                "event_name": "ERC20DepositInitiated",
                 "event_args": event_args,
                 "tx_hash": tx_hash,
                 "timestamp": block_timestamp
