@@ -52,7 +52,7 @@ def monitor_deposits_L1():
     event_filter_3 = contract3.events.ETHDepositInitiated.create_filter(fromBlock='latest')
     event_filter_4 = contract3.events.ERC20DepositInitiated.create_filter(fromBlock='latest')
 
-    print("Listening for events in L1...")
+    print("Listening for deposit events in L1...")
 
     while True:
         for event in event_filter_1.get_new_entries():
@@ -73,7 +73,7 @@ def monitor_deposits_L1():
                     "timestamp": block_timestamp
                 })
             except Exception as e:
-                print(f"Error inserting event into database: {e}")
+                print(f"Error inserting L1 deposit event into database: {e}")
 
         for event in event_filter_2.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -93,7 +93,7 @@ def monitor_deposits_L1():
                     "timestamp": block_timestamp
                 })
             except Exception as e:
-                print(f"Error inserting event into database: {e}")
+                print(f"Error inserting L1 deposit event into database: {e}")
 
         for event in event_filter_3.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -115,7 +115,7 @@ def monitor_deposits_L1():
                     "timestamp": block_timestamp
                 })
             except Exception as e:
-                print(f"Error inserting event into database: {e}")
+                print(f"Error inserting L1 deposit event into database: {e}")
         
         for event in event_filter_4.get_new_entries():
             tx_hash = event['transactionHash'].hex()
@@ -135,11 +135,10 @@ def monitor_deposits_L1():
                     "from": str(event_args['_from']),
                     "to": str(event_args['_to']),
                     "amount": str(event_args['_amount']),
-                    "event_args": event_args,
                     "tx_hash": tx_hash,
                     "timestamp": block_timestamp
                 })
             except Exception as e:
-                print(f"Error inserting event into database: {e}")
+                print(f"Error inserting deposit event into database: {e}")
             
-            print("New Event added to L1 database")
+            print("New Deposit Event added to L1 database")

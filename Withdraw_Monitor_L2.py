@@ -7,7 +7,7 @@ import os
 import json
 
 
-def monitor_deposits_L2():
+def monitor_withdraw_L2():
     load_dotenv()
     rpc_provider_URL = os.getenv('L2_RPC_PROVIDER_URL')
     private_key = os.getenv('PRIVATE_KEY')
@@ -15,7 +15,7 @@ def monitor_deposits_L2():
 
     client = MongoClient(mongo_string)
     db = client["OptimismLogs"]
-    collection = db["DepositsL2"]
+    collection = db["WithdrawL2"]
 
 
     abi_path_1 = os.path.abspath('./Abis/OVM_L2StandardBridge.json')
@@ -43,10 +43,10 @@ def monitor_deposits_L2():
     contract2 = w3.eth.contract(address=checksum_address, abi=Contract2Abi)
 
     event_filter_Transfer = contract2.events.Transfer.create_filter(fromBlock='latest')
-    event_filter_Mint = contract2.events.Mint.create_filter(fromBlock='latest')
-    event_filter_DepositFinalized = contract1.events.DepositFinalized.create_filter(fromBlock='latest')
+    event_filter_Burn = contract2.events.Burn.create_filter(fromBlock='latest')
+    event_filter_WithdrawalInitiated = contract1.events.WithdrawalInitiated.create_filter(fromBlock='latest')
 
-    print("Listening for deposit events in L2...")
+    print("Listening for withdraw events in L2...")
 
     while True:
         for event in event_filter_Transfer.get_new_entries():
@@ -62,28 +62,28 @@ def monitor_deposits_L2():
                     "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
                 })
             except Exception as e:
-                print(f"Error inserting L2 deposit event into database: {e}")
+                print(f"Error inserting withdraw event into database: {e}")
 
-        for event in event_filter_Mint.get_new_entries():
+        for event in event_filter_Burn.get_new_entries():
             event_args = {k: v.decode('latin-1') if isinstance(v, bytes) else v for k, v in event['args'].items() if k != '_data' and k != 'message'}
             try:
                 collection.insert_one({
                     "contract_address": event['address'],
-                    "event_name": "Mint",
+                    "event_name": "Burn",
                     "account": str(event_args['_account']),
                     "amount": str(event_args['_amount']),
                     "transaction_hash": event['transactionHash'].hex(),
                     "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
                 })
             except Exception as e:
-                print(f"Error inserting L2 deposit event into database: {e}")
+                print(f"Error inserting withdraw event into database: {e}")
 
-        for event in event_filter_DepositFinalized.get_new_entries():
+        for event in event_filter_WithdrawalInitiated.get_new_entries():
             event_args = {k: v.decode('latin-1') if isinstance(v, bytes) else v for k, v in event['args'].items() if k != '_data'}
             try:
                 collection.insert_one({
                     "contract_address": event['address'],
-                    "event_name": "DepositFinalized",
+                    "event_name": "WithdrawalInitiated",
                     "l1Token": str(event_args['_l1Token']),
                     "l2Token": str(event_args['_l2Token']),
                     "from": str(event_args['_from']),
@@ -93,5 +93,5 @@ def monitor_deposits_L2():
                     "timestamp": w3.eth.get_block(event['blockNumber'])['timestamp']
                 })
             except Exception as e:
-                print(f"Error inserting L2 deposit event into database: {e}")
-            print("New Deposit Event added to L2 database")
+                print(f"Error inserting withdraw event into database: {e}")
+            print("New Withdraw Event added to L2 database")

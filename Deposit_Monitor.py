@@ -3,6 +3,8 @@ from Deposit_Monitor_L2 import monitor_deposits_L2
 from Get_OVM_ETH_Total_Supply import OVM_ETH_Total_Supply
 from Get_Token_Pairs import Get_Token_Pairs
 from Get_L1_Balances import Get_L1_Balances
+from Withdraw_Monitor_L2 import monitor_withdraw_L2
+from Withdraw_Monitor_L1 import monitor_withdraw_L1
 import threading
 
 
@@ -11,7 +13,9 @@ def main():
     threads = [threading.Thread(target=monitor_deposits_L1),
                threading.Thread(target=monitor_deposits_L2),
                threading.Thread(target=OVM_ETH_Total_Supply),
-               threading.Thread(target=Get_L1_Balances, args=(tokenPairs,))]
+               threading.Thread(target=Get_L1_Balances, args=(tokenPairs,)),
+               threading.Thread(target=monitor_withdraw_L2),
+               threading.Thread(target=monitor_withdraw_L1)]
     
     for t in threads:
         t.start()
