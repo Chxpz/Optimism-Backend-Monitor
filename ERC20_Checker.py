@@ -1,7 +1,6 @@
 from Get_L1_Balances_v2 import Get_L1_Balances_v2
 from Balance_Checker_ERC20_L2 import Balance_Checker_ERC20_L2
 from Get_Token_Pairs import Get_Token_Pairs
-import art
 
 def calculate_differences(ERC20L1_balances, ERC20L2_balances, token_address):
     results = []
@@ -40,28 +39,9 @@ def calculate_differences(ERC20L1_balances, ERC20L2_balances, token_address):
             elif result['TokenL2'].lower() == token_address.lower():
                 l1_token = next(item['TokenL1'] for item in results if item['TokenL2'].lower() == token_address.lower())
                 l2_token = result['TokenL2']
-                difference = -result['Difference']  # negate the difference for L2 tokens
+                difference = -result['Difference']  
                 percentage_difference = "{:.2f}%".format(abs(result['PercentageDifference']))
                 risk = result['Risk']
-            difference_formatted = "{:,.2f}".format(difference)
-            print("| {:<44} | {:<44} | {:>20} | {:>15} | {:<9} |".format(l1_token, l2_token, difference_formatted, percentage_difference, risk))
+            print("| {:<44} | {:<44} | {:>20} | {:>15} | {:<9} |".format(l1_token, l2_token, difference, percentage_difference, risk))
         print("+----------------------------------------------+----------------------------------------------+----------------------+-----------------+-----------+")
     return
-
-if __name__ == '__main__':
-    try:
-        print(art.text2art("Optimism Bridge Monitor"))
-        print("Setting up everything...")
-        token_pairs = Get_Token_Pairs()
-        ERC20L1_balances = Get_L1_Balances_v2(token_pairs)
-        ERC20L2_balances = Balance_Checker_ERC20_L2(token_pairs)
-        while True:
-            token_address = input("Input a token address to analyze: ")
-            calculate_differences(ERC20L1_balances, ERC20L2_balances, token_address)
-            choice = input("Want to Analyze another token? Y/N ")
-            if choice.lower() == 'n':
-                break
-        print("Thank you")
-    except Exception as e:
-        print(f"Error: {e}")
-
