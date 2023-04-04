@@ -23,8 +23,8 @@ def Balance_Checker_ERC20_L2(token_pairs):
     
 
     Balance_List = []
-    for i in range(len(token_pairs)):
-        L2_ERC20 = w3.eth.contract(address=to_checksum_address(token_pairs[i]['tokenL2']), abi=ERC20Abi)
+    for token_pair in token_pairs:
+        L2_ERC20 = w3.eth.contract(address=to_checksum_address(token_pair['tokenL2']), abi=ERC20Abi)
         L2_ERC20_Total_Supply = L2_ERC20.functions.totalSupply().call()
         Balance_List.append({
             "L2_Token": L2_ERC20.address,
