@@ -21,28 +21,31 @@ def calculate_differences(ERC20L1_balances, ERC20L2_balances, token_address):
                         'TokenL1': token_pair['tokenL1'],
                         'TokenL2': tokenL2,
                         'Difference': difference,
-                        'PercentageDifference': round(percentage_difference, 2),
+                        'PercentageDifference': percentage_difference,
                         'Risk': risk
                     })
     if len(results) == 0:
         print(f"No results found for token address {token_address}")
     else:
-        print("| L1 Token                                     | L2 Token                                     | Difference          | % Difference | Risk     |")
-        print("-" * 128)
+        print("+----------------------------------------------+----------------------------------------------+----------------------+-----------------+-----------+")
+        print("| L1 Token                                     | L2 Token                                     | Difference           | % Difference    | Risk      |")
+        print("+----------------------------------------------+----------------------------------------------+----------------------+-----------------+-----------+")
         for result in results:
             if result['TokenL1'].lower() == token_address.lower():
                 l1_token = result['TokenL1']
                 l2_token = result['TokenL2']
                 difference = result['Difference']
-                percentage_difference = str(result['PercentageDifference']) + '%'
+                percentage_difference = "{:.2f}%".format(abs(result['PercentageDifference']))
                 risk = result['Risk']
             elif result['TokenL2'].lower() == token_address.lower():
                 l1_token = next(item['TokenL1'] for item in results if item['TokenL2'].lower() == token_address.lower())
                 l2_token = result['TokenL2']
                 difference = -result['Difference']  # negate the difference for L2 tokens
-                percentage_difference = str(result['PercentageDifference']) + '%'
+                percentage_difference = "{:.2f}%".format(abs(result['PercentageDifference']))
                 risk = result['Risk']
-            print(f"| {l1_token:<44} | {l2_token:<44} | {difference:<20} | {percentage_difference:<12} | {risk:<8} |")
+            difference_formatted = "{:,.2f}".format(difference)
+            print("| {:<44} | {:<44} | {:>20} | {:>15} | {:<9} |".format(l1_token, l2_token, difference_formatted, percentage_difference, risk))
+        print("+----------------------------------------------+----------------------------------------------+----------------------+-----------------+-----------+")
     return
 
 if __name__ == '__main__':

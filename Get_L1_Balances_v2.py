@@ -31,7 +31,6 @@ def Get_L1_Balances_v2(tokenPairs):
 
     l1_list = []
 
-    
     try:
         balance = L1_Monitor.functions.getBridgebalances(bridgeAddress, tokenPairs).call()
     except Exception as e:
