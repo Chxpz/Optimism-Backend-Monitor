@@ -35,6 +35,8 @@ def Get_L1_Balances(tokenPairs):
 
     L1_Monitor = w3.eth.contract(address=L1_MONITOR_ADDR, abi=Contract1Abi)
 
+    l1_list = []
+
     while True:
         try:
             balance = L1_Monitor.functions.getBridgebalances(bridgeAddress, tokenPairs).call()

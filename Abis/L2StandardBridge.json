@@ -1,0 +1,26 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "adr1",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "adr2",
+				"type": "address"
+			}
+		],
+		"name": "deposits",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
